@@ -1,1 +1,1 @@
-# Maui_Blazor_Basics
+# Maui Blazor Basics

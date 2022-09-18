@@ -10,7 +10,13 @@ namespace Maui_Blazor_Basics
 	{
 		public static string GetLocalFilePath(string filename)
 		{
+#if ANDROID
+			var documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+			return System.IO.Path.Combine(documentsPath, filename);
+#else
+
 			return System.IO.Path.Combine(FileSystem.AppDataDirectory, filename);
+#endif
 		}
 	}
 }

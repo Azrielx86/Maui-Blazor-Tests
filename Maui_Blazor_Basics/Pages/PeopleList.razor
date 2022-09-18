@@ -5,9 +5,15 @@
 
 <h3>People List</h3>
 
-<div class="mb-3">
-	<input placeholder="Add a new person" type="text" class="form-control" @bind="NewPersonName"/>
-	<button class="btn btn-primary" @onclick="AddNewPerson">Add</button>
+<div class="mb-3 container">
+	<div class="row g-2">
+		<div class="col-auto">
+			<input placeholder="Add a new person" type="text" class="form-control" @bind="newPersonName"/>
+		</div>
+		<div class="col-auto">
+			<button class="btn btn-primary" @onclick="AddNewPerson">Add</button>
+		</div>
+	</div>
 	<p>@statusMessage</p>
 </div>
 
@@ -18,22 +24,43 @@
 		@foreach(var people in peopleList)
 		{
 			<div class="container card mb-3 p-2">
-				<p>@people.Name</p>
+				<div class="row g-2 d-flex justify-content-between">
+					<div class="col-auto mx-2">
+						@people.Name 
+					</div>
+					<div class="col-auto mx-2">
+						<button class="btn btn-danger" @onclick="() => DeletePerson(people.Id)">
+							<span class="oi oi-trash" aria-hidden="true"></span>
+						</button>
+					</div>
+				</div>
 			</div>
 		}
 	}
 </div>
 
 @code {
-	private string NewPersonName;
+	private string newPersonName;
 	private string statusMessage;
 	private List<PersonModel> peopleList = App.PeopleRepo.GetAllPeople();
 
 	private void AddNewPerson()
 	{
-		if (string.IsNullOrEmpty(NewPersonName)) return;
+		if (string.IsNullOrEmpty(newPersonName)) return;
 
-		App.PeopleRepo.AddNewPerson(NewPersonName);
+		App.PeopleRepo.AddNewPerson(newPersonName);
 		statusMessage = App.PeopleRepo.StatusMessage;
+
+		peopleList = App.PeopleRepo.GetAllPeople();
+
+		newPersonName = "";
+	}
+
+	private void DeletePerson(int id)
+	{
+		App.PeopleRepo.DeletePerson(id);
+		statusMessage = App.PeopleRepo.StatusMessage;
+
+		peopleList = App.PeopleRepo.GetAllPeople();
 	}
 }

@@ -44,6 +44,31 @@ namespace Maui_Blazor_Basics.Services
 			} catch (Exception ex) { }
 		}
 
+		public void DeletePerson(int id)
+		{
+			int result = 0;
+			try
+			{
+				Init();
+
+				conn.Delete(conn.Get<PersonModel>(id));
+			} catch (Exception ex) { }
+		}
+
+		public PersonModel GetPerson(int id)
+		{
+			try
+			{
+				Init();
+
+				PersonModel p = conn.Get<PersonModel>(id);
+				return p;
+			} catch (Exception ex)
+			{
+				return null;
+			}
+		}
+
 		public List<PersonModel> GetAllPeople()
 		{
 			try
