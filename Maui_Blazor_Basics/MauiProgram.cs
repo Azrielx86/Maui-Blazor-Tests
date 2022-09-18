@@ -24,6 +24,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<WeatherForecastService>();
 		builder.Services.AddSingleton<IDeezerSearchService, DeezerSearchService>();
 
+		string dbPath = FileAccessHelper.GetLocalFilePath("people.db3");
+		builder.Services.AddSingleton<PersonDBService>(s => ActivatorUtilities.CreateInstance<PersonDBService>(s, dbPath));
+
 		return builder.Build();
 	}
 }

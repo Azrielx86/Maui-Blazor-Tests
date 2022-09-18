@@ -1,0 +1,39 @@
+﻿@page "/people-list"
+
+@using Maui_Blazor_Basics.Models
+@using Maui_Blazor_Basics.Services
+
+<h3>People List</h3>
+
+<div class="mb-3">
+	<input placeholder="Add a new person" type="text" class="form-control" @bind="NewPersonName"/>
+	<button class="btn btn-primary" @onclick="AddNewPerson">Add</button>
+	<p>@statusMessage</p>
+</div>
+
+<div class="mb-3">
+	@if(peopleList.Count > 0)
+	{
+		<h4>People List</h4>
+		@foreach(var people in peopleList)
+		{
+			<div class="container card mb-3 p-2">
+				<p>@people.Name</p>
+			</div>
+		}
+	}
+</div>
+
+@code {
+	private string NewPersonName;
+	private string statusMessage;
+	private List<PersonModel> peopleList = App.PeopleRepo.GetAllPeople();
+
+	private void AddNewPerson()
+	{
+		if (string.IsNullOrEmpty(NewPersonName)) return;
+
+		App.PeopleRepo.AddNewPerson(NewPersonName);
+		statusMessage = App.PeopleRepo.StatusMessage;
+	}
+}
