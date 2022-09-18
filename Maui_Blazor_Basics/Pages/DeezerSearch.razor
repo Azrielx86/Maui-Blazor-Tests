@@ -1,0 +1,112 @@
+﻿@page "/deezer-search"
+
+@using System.Timers;
+@using Maui_Blazor_Basics.Models;
+@using Maui_Blazor_Basics.Services;
+@inject IJSRuntime JS
+@inject IDeezerSearchService service;
+@implements IDisposable;
+
+<h1>Deezer Search</h1>
+
+<div class="mb-3">
+	<input placeholder="Search by Artist, Song, Album..." type="text" class="form-control"
+	@onkeyup="@ResetTimer" @bind="@SearchInput" @bind:event="oninput" @onkeydown="@InstantSearch"/>
+</div>
+
+<p id="test"></p>
+
+<div class="mb-3">
+	@if(_deezerSearch is not null)
+	{
+		@foreach(var result in _deezerSearch.data)
+		{
+			<div class="container card mb-3 p-2" id="@result.id" @onclick="(() => PlayPreview(result.preview, result.id))">
+				<div style="
+					display: flex;
+					flex-direction: row;
+					align-content: center;
+					">
+					<div style="max-width: 120px;" >
+						<img class="rounded border" style="max-width: 100%;" src="@result.album.cover_big"/>
+					</div>
+					<div class="mx-3 p-2" style="display: flex;
+												flex-direction: column;
+												max-width: 100%;
+												justify-content: center;
+												align-content: center;">
+						<h5 class="my-0" style="word-break: break-all;"><b>@(result.title.Length > 30 ? $"{result.title.Substring(0, 26)}..." : result.title)</b></h5>
+						<h6 class="my-0"><b>@result.album.title</b></h6>
+						<p class="my-0">@result.artist.name</p>
+					</div>
+				</div>
+			</div>
+		}
+	}
+</div>
+
+@*
+	Agregar Progressbar
+*@
+
+@code {
+	public string SearchInput { get; set; } = string.Empty;
+	private DeezerSearchModel _deezerSearch;
+	private Timer aTimer = default!;
+
+
+	protected override void OnInitialized()
+	{
+		aTimer = new Timer(500);
+		aTimer.Elapsed += UpdateResults;
+		aTimer.AutoReset = false;
+		#if DEBUG
+	SearchInput = "Linkin Park";
+	UpdateResults(null, null);
+		#endif
+	}
+
+	private async void ResetTimer(KeyboardEventArgs e)
+	{
+		if (string.IsNullOrEmpty(SearchInput))
+		{
+			_deezerSearch = null;
+			await JS.InvokeVoidAsync("stopAudio");
+			return;
+		}
+		aTimer.Stop();
+		aTimer.Start();
+	}
+
+	private async void UpdateResults(Object source, ElapsedEventArgs e)
+	{
+		if (string.IsNullOrEmpty(SearchInput)) return;
+		_deezerSearch = await service.Get(SearchInput);
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private async void InstantSearch(KeyboardEventArgs e)
+	{
+		if (e.Code != "Enter") return;
+		aTimer.Stop();
+		await Task.Run(() => UpdateResults(null, null));
+	}
+
+	private async void PlayPreview(string src, int songId)
+	{
+		try
+		{
+			await JS.InvokeVoidAsync("playAudio", src, songId);
+		}
+		catch(Exception)
+		{
+			await JS.InvokeVoidAsync("stopAudio");
+		}
+	}
+
+	void IDisposable.Dispose()
+	{
+		JS.InvokeVoidAsync("stopAudio");
+		aTimer?.Dispose();
+	}
+}
